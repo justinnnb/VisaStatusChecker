@@ -1,13 +1,17 @@
 from multiprocessing.connection import wait
 import pandas as pd
+
+import time
+
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-from webdriver_manager.chrome import ChromeDriverManager
-
+from selenium.common.exceptions import NoSuchElementException
 
 import json
 from google.oauth2 import service_account
@@ -16,9 +20,6 @@ from google.auth.transport.requests import Request
 import gspread
 from gspread_dataframe import get_as_dataframe, set_with_dataframe
 from datetime import datetime
-
-from selenium.webdriver.chrome.service import Service
-service = Service()
 
 with open('../../Json/keys.json') as f:
     config = json.load(f)
@@ -52,11 +53,14 @@ class Database:
 
 data = Database()
 
-options = Options()
-# options.headless = True
 
-driver = webdriver.Chrome('/Users/justinbilao/Downloads/chromedriver-mac-arm64/chromedriver', options=options)
- 
+# service = Service(ChromeDriverManager().install())
+options = Options()
+options.add_argument("--headless=new")
+
+driver = webdriver.Chrome(options=options)
+# driver = webdriver.Chrome(service=service,options=options)
+
 def main():
 
     for x in range(1, len(data.database["Username"])):
@@ -70,7 +74,13 @@ def main():
                 driver.find_element("name", "username").send_keys(data.database.at[x,"Username"])
                 driver.find_element("name", "password").send_keys(data.database.at[x,"Password"])
                 driver.find_element("name", "login").send_keys(Keys.ENTER)
-                
+
+                try:
+                    no_button = driver.find_element(By.XPATH, "//button[contains(.,'No')]")
+                    no_button.click()
+                except NoSuchElementException:
+                    pass
+
                 driver.find_element("name", "continue").send_keys(Keys.ENTER)
             
                 def update_status():
@@ -91,18 +101,18 @@ def main():
                     if last_update_date_cell == "":
                         last_update_date() # recurse until Update Date is visible/detected
 
-                    print("New Update:", last_update_date_cell)
 
                     # if there is a new update, the current update will be moved to the next cell. the new update will be at the current cell.
                     if data.database.at[x, "Current Status Date"] != last_update_date_cell:
                         data.database.at[x, "Previous Status Date"] = str(data.database.at[x, "Current Status Date"])
-                        print("New Update:", last_update_date_cell)
+                        # print("New Update:", last_update_date_cell)
 
+                    print("New Update:", last_update_date_cell)
                     data.database.at[x, "Current Status Date"] = str(last_update_date_cell)
 
                 last_update_date()
 
-                # Print status to the terminal for each user
+                # Print status to the terminal for each user5
                 user = str(data.database.at[x, "Username"])
                 print("%s is %s" % (user, status))
 
@@ -111,8 +121,8 @@ def main():
                 driver.find_element("xpath", "/html/body/header/div/ul/li/div/a").click()
 
             except Exception as e:
-                data.database.at[x, "Status"] = "Error"
-                
+                data.database.at[x, "Status"] = e
+
     data.update_sheet(data.database)
     driver.quit()
 

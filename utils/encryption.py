@@ -14,5 +14,5 @@ def decrypt_password(encrypted_password):
     try:
         return fernet.decrypt(encrypted_password).decode()
     except Exception as e:
-        print(f"Decryption error: {e}", encrypted_password)
+        print(f"Decryption error: {e}")
         return None

@@ -28,20 +28,19 @@ import os
 #get firestore actions
 
 
-async def login_to_immi(db, driver, user_id):
+async def login_to_immi(user_data, driver):
     try:
-        print(f"Logging in to Immi for user {user_id}")
+        print(user_data)
+        print(f"Logging in to Immi for user{user_data['Name']}")
+
         
         # Await the database query if it supports async operations
-        user = db.collection('users').where('id', '==', user_id).get()
-        
-        print(f"User found: {user}")
-        if len(user) > 0:                               
-            username = user[0].to_dict()['username']
-            passkey = user[0].to_dict()['password']
+        if user_data:                               
+            username = user_data['username']
+            passkey = user_data['password']
             password = decrypt_password(passkey)
         else:
-            print(f"User not found: {user_id}")
+            print(f"User not found: {user_data['Name']}")
             return False
 
         driver.get("https://online.immi.gov.au/ola/app")

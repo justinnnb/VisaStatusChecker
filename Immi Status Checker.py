@@ -102,6 +102,7 @@ async def main():
     not_finalised_applications = [application for application in not_finalised_applications if application['visa_type'] != "My Health Declarations"]
     
     for application in not_finalised_applications:
+        user_doc_id = application['user_id']
 
         
         # continue
@@ -112,9 +113,16 @@ async def main():
         # 'reference_number': 'EGOVF6ETFJ',
         # 'last_updated': DatetimeWithNanoseconds(2022, 11, 25, 0, 0, tzinfo = datetime.timezone.utc) }      
         #   
-        if application['user_id']:
+        if user_doc_id:
             try:
-                await login_to_immi(db, driver, application['user_id'])
+
+                user = db.collection('users').document(application['user_id']).get()
+                user = user.to_dict()
+
+                # breakpoint()
+
+                if user:
+                    await login_to_immi(user, driver)
 
                 # Add this section to handle tabs and their content
                 tabs = WebDriverWait(driver, 10).until(

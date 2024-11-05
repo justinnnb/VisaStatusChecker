@@ -36,31 +36,6 @@ import db.actions as db_actions
 # Load environment variables
 load_dotenv()
 
-# Replace the config loading with environment variables
-# SERVICE_ACCOUNT_FILE = os.getenv('SERVICE_ACCOUNT_FILE')
-# sheets_key = os.getenv('GOOGLE_SHEETS_KEY')
-# Add debug print to verify the values
-# to connect to firestore db
-
-
-# async def get_firestore_data(collection_name):
-#     docs = db.collection(collection_name).stream()
-#     data = []
-#     for doc in docs:
-#         doc_dict = doc.to_dict()
-#         doc_dict['id'] = doc.id
-#         data.append(doc_dict)
-#     return data
-
-# async def get_encrypted_password(username):
-#     user_data = await get_firestore_data('users').where('username', '==', username).get()
-#     for user in user_data:
-#         if user['username'] == username:
-#             return decrypt_password(user['password'])
-#     return None
-
-# Add a check for the FERNET_KEY environment variable
-
 def parse_date(date_str):
     if not date_str:
         return None
@@ -104,15 +79,6 @@ async def main():
     for application in not_finalised_applications:
         user_doc_id = application['user_id']
 
-        
-        # continue
-        # { 'date_submitted': DatetimeWithNanoseconds(2022, 11, 25, 0, 0, tzinfo = datetime.timezone.utc),
-        # 'user_id': '123123213',
-        # 'status': 'Submitted',
-        # 'visa_type': 'My Health Declarations',
-        # 'reference_number': 'EGOVF6ETFJ',
-        # 'last_updated': DatetimeWithNanoseconds(2022, 11, 25, 0, 0, tzinfo = datetime.timezone.utc) }      
-        #   
         if user_doc_id:
             try:
 
